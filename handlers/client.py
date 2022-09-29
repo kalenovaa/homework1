@@ -3,9 +3,9 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from config import bot, dp
 import random
 from database.bot_db import sql_command_random
+from handlers import news
 
 
-#@dp.message_handler(commands=['start'])
 async def start_command(message: types.Message):
     await message.answer(f"приветствую вас госпожа {message.from_user.first_name}")
 
@@ -75,9 +75,21 @@ async def show_random_user(message: types.Message):
     await sql_command_random(message)
 
 
+async def parser_news(message: types.Message):
+    data = news.parser()[:3]
+    for item in data:
+        await bot.send_message(message.from_user.id,
+                               f"{item['time']}\n"
+                               f"{item['title']}\n"
+                               f"{item['link']}")
+
+dp.register_message_handler(parser_news, commands=['news'])
+
+
 def register_handlers_client(dp: Dispatcher):
     dp.register_message_handler(start_command, commands=['start'])
     dp.register_message_handler(mem, commands=['mem'])
     dp.register_message_handler(quiz_1, commands=['quiz'])
     dp.register_message_handler(pin, commands=['pin'], commands_prefix='!')
     dp.register_message_handler(show_random_user, commands=['get'])
+    dp.register_message_handler(parser_news, commands=['news'])
